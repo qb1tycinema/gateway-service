@@ -12,7 +12,7 @@ export class AppController {
 		summary: "Health check",
 		description: "Check if the gateway is running"
 	})
-	@ApiOkResponse({ 
+	@ApiOkResponse({
 		type: HealthResponse
 	})
 	@Get("/health")
