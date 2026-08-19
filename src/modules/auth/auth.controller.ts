@@ -1,11 +1,19 @@
-import { Body, Controller, HttpCode, HttpStatus, Post, Req, Res } from "@nestjs/common"
+import {
+	Body,
+	Controller,
+	HttpCode,
+	HttpStatus,
+	Post,
+	Req,
+	Res
+} from "@nestjs/common"
+import { ConfigService } from "@nestjs/config"
 import { ApiOperation } from "@nestjs/swagger"
+import type { Request, Response } from "express"
+import { lastValueFrom } from "rxjs"
 
 import { AuthClientGrpc } from "./auth.grpc"
 import { SendOtpReguest, VerifyOtpRequest } from "./dto"
-import type { Request, Response } from "express"
-import { lastValueFrom } from "rxjs"
-import { ConfigService } from "@nestjs/config"
 
 @Controller("auth")
 export class AuthController {
@@ -36,7 +44,9 @@ export class AuthController {
 		@Body() dto: VerifyOtpRequest,
 		@Res({ passthrough: true }) res: Response
 	) {
-		const { accessToken, refreshToken } = await lastValueFrom(this.client.verifyOtp(dto))
+		const { accessToken, refreshToken } = await lastValueFrom(
+			this.client.verifyOtp(dto)
+		)
 
 		res.cookie("refreshToken", refreshToken, {
 			httpOnly: true,
@@ -61,7 +71,8 @@ export class AuthController {
 	) {
 		const refreshToken = req.cookies?.refreshToken
 
-		const { accessToken, refreshToken: newRefreshToken } = await lastValueFrom(this.client.refresh(refreshToken))
+		const { accessToken, refreshToken: newRefreshToken } =
+			await lastValueFrom(this.client.refresh(refreshToken))
 
 		res.cookie("refreshToken", newRefreshToken, {
 			httpOnly: true,
@@ -84,7 +95,7 @@ export class AuthController {
 		res.cookie("refreshToken", "", {
 			httpOnly: true,
 			secure: this.config.get("NODE_ENV") !== "development",
-			domain:  this.config.getOrThrow<string>("COOKIES_DOMAIN"),
+			domain: this.config.getOrThrow<string>("COOKIES_DOMAIN"),
 			sameSite: "lax",
 			expires: new Date(0)
 		})

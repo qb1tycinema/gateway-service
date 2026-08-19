@@ -1,6 +1,7 @@
 import { Logger, ValidationPipe } from "@nestjs/common"
 import { ConfigService } from "@nestjs/config"
 import { NestFactory } from "@nestjs/core"
+import cookieParser from "cookie-parser"
 
 import { AppModule } from "./core/app.module"
 import {
@@ -9,7 +10,6 @@ import {
 	swaggerConfig
 } from "./core/config"
 import { GrpcExceptionFilter } from "./shared/filters"
-import cookieParser from "cookie-parser"
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule)
