@@ -73,4 +73,24 @@ export class AuthController {
 
 		return { accessToken }
 	}
+
+	@ApiOperation({
+		summary: "Logout",
+		description: "Clears the refresh token cookie and logs the user out"
+	})
+	@Post("logout")
+	@HttpCode(HttpStatus.OK)
+	public async logout(@Res() res: Response) {
+		res.cookie("refreshToken", "", {
+			httpOnly: true,
+			secure: this.config.get("NODE_ENV") !== "development",
+			domain:  this.config.getOrThrow<string>("COOKIES_DOMAIN"),
+			sameSite: "lax",
+			expires: new Date(0)
+		})
+
+		return {
+			ok: true
+		}
+	}
 }
