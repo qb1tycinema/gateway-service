@@ -6,6 +6,7 @@ import { AppController } from "./app.controller"
 import { AppService } from "./app.service"
 import { getPassportConfig } from "./config"
 import { AuthModule } from "@/modules/auth/auth.module"
+import { AccountModule } from "@/modules/account/account.module"
 
 @Module({
 	imports: [
@@ -16,7 +17,8 @@ import { AuthModule } from "@/modules/auth/auth.module"
 			useFactory: getPassportConfig,
 			inject: [ConfigService]
 		}),
-		AuthModule
+		AuthModule,
+		AccountModule
 	],
 	controllers: [AppController],
 	providers: [AppService]
