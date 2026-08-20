@@ -72,7 +72,7 @@ export class AuthController {
 		const refreshToken = req.cookies?.refreshToken
 
 		const { accessToken, refreshToken: newRefreshToken } =
-			await lastValueFrom(this.client.refresh(refreshToken))
+			await lastValueFrom(this.client.refresh({ refreshToken }))
 
 		res.cookie("refreshToken", newRefreshToken, {
 			httpOnly: true,
