@@ -1,11 +1,13 @@
 import {
 	Body,
 	Controller,
+	Get,
 	HttpCode,
 	HttpStatus,
 	Post,
 	Req,
-	Res
+	Res,
+	UnauthorizedException
 } from "@nestjs/common"
 import { ConfigService } from "@nestjs/config"
 import { ApiOperation } from "@nestjs/swagger"
@@ -13,7 +15,7 @@ import type { Request, Response } from "express"
 import { lastValueFrom } from "rxjs"
 
 import { AuthClientGrpc } from "./auth.grpc"
-import { SendOtpReguest, VerifyOtpRequest } from "./dto"
+import { SendOtpReguest, TelegramVerifyRequest, VerifyOtpRequest } from "./dto"
 
 @Controller("auth")
 export class AuthController {
@@ -103,5 +105,61 @@ export class AuthController {
 		return {
 			ok: true
 		}
+	}
+
+	@ApiOperation({
+		summary: "Init Telegram login",
+		description:
+			"Initiates the authentication process via Telegram and prepares the session state."
+	})
+	@Get("auth/telegram")
+	@HttpCode(HttpStatus.OK)
+	public async telegramInit() {
+		return this.client.telegramInit()
+	}
+
+	@ApiOperation({
+		summary: "Verify Telegram login",
+		description:
+			"Verifies the Telegram authentication payload. Upon successful verification, sets an HTTP-only refresh token cookie and returns the access token."
+	})
+	@Post("telegram/verify")
+	@HttpCode(HttpStatus.OK)
+	public async telegramVerify(
+		@Body() dto: TelegramVerifyRequest,
+		@Res({ passthrough: true }) res: Response
+	) {
+		const query = JSON.parse(atob(dto.tgAuthResult))
+
+		const result = await lastValueFrom(
+			this.client.telegramVerify({ query })
+		)
+
+		if ("url" in result && result.url) {
+			return result
+		}
+
+		if (
+			"accessToken" in result &&
+			"refreshToken" in result &&
+			result.accessToken &&
+			result.refreshToken
+		) {
+			const { accessToken, refreshToken } = result
+
+			res.cookie("refreshToken", refreshToken, {
+				httpOnly: true,
+				secure: this.config.get("NODE_ENV") !== "development",
+				domain: this.config.getOrThrow<string>("COOKIES_DOMAIN"),
+				sameSite: "lax",
+				maxAge: 30 * 24 * 60 * 60 * 1000
+			})
+
+			return {
+				accessToken
+			}
+		}
+
+		throw new UnauthorizedException("Invalid Telegram login response")
 	}
 }
