@@ -15,7 +15,7 @@ import type { Request, Response } from "express"
 import { lastValueFrom } from "rxjs"
 
 import { AuthClientGrpc } from "./auth.grpc"
-import { SendOtpReguest, TelegramVerifyRequest, VerifyOtpRequest } from "./dto"
+import { SendOtpReguest, TelegramConsumeRequest, TelegramVerifyRequest, VerifyOtpRequest } from "./dto"
 
 @Controller("auth")
 export class AuthController {
@@ -161,5 +161,32 @@ export class AuthController {
 		}
 
 		throw new UnauthorizedException("Invalid Telegram login response")
+	}
+
+	@ApiOperation({
+        summary: "Finalize Telegram authentication",
+        description: "Accepts a session identifier (sessionId) verified by the Telegram bot and exchanges it for JWT tokens. The refresh token is automatically set in a secure httpOnly cookie, while the access token is returned in the response body."
+    })
+	@Post("telegram/finalize")
+	@HttpCode(HttpStatus.OK)
+	public async consume(
+		@Body() dto: TelegramConsumeRequest,
+		@Res({ passthrough: true }) res: Response
+	) {
+		const { accessToken, refreshToken } = await lastValueFrom(
+			this.client.consume(dto)
+		)
+
+		res.cookie("refreshToken", refreshToken, {
+			httpOnly: true,
+			secure: this.config.get("NODE_ENV") !== "development",
+			domain: this.config.getOrThrow<string>("COOKIES_DOMAIN"),
+			sameSite: "lax",
+			maxAge: 30 * 24 * 60 * 60 * 1000
+		})
+
+		return {
+			accessToken
+		}
 	}
 }
