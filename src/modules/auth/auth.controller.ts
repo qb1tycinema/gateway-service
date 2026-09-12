@@ -15,7 +15,12 @@ import type { Request, Response } from "express"
 import { lastValueFrom } from "rxjs"
 
 import { AuthClientGrpc } from "./auth.grpc"
-import { SendOtpReguest, TelegramConsumeRequest, TelegramVerifyRequest, VerifyOtpRequest } from "./dto"
+import {
+	SendOtpReguest,
+	TelegramConsumeRequest,
+	TelegramVerifyRequest,
+	VerifyOtpRequest
+} from "./dto"
 
 @Controller("auth")
 export class AuthController {
@@ -164,9 +169,10 @@ export class AuthController {
 	}
 
 	@ApiOperation({
-        summary: "Finalize Telegram authentication",
-        description: "Accepts a session identifier (sessionId) verified by the Telegram bot and exchanges it for JWT tokens. The refresh token is automatically set in a secure httpOnly cookie, while the access token is returned in the response body."
-    })
+		summary: "Finalize Telegram authentication",
+		description:
+			"Accepts a session identifier (sessionId) verified by the Telegram bot and exchanges it for JWT tokens. The refresh token is automatically set in a secure httpOnly cookie, while the access token is returned in the response body."
+	})
 	@Post("telegram/finalize")
 	@HttpCode(HttpStatus.OK)
 	public async consume(
