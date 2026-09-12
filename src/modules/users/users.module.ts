@@ -3,9 +3,10 @@ import { ConfigService } from "@nestjs/config"
 import { ClientsModule, Transport } from "@nestjs/microservices"
 import { PROTO_PATHS } from "@qb1tycinema/contracts"
 
-import { UsersClientGrpc } from "./users.grpc"
-import { UsersController } from "./users.controller"
 import { AccountModule } from "../account/account.module"
+
+import { UsersController } from "./users.controller"
+import { UsersClientGrpc } from "./users.grpc"
 
 @Module({
 	imports: [
