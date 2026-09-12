@@ -1,19 +1,19 @@
 import { Controller, Get, HttpCode, HttpStatus } from "@nestjs/common"
-import { ApiBearerAuth, ApiOperation } from "@nestjs/swagger"
+import { ApiBearerAuth, ApiOkResponse, ApiOperation } from "@nestjs/swagger"
 
-import { CurrentUser, Protected } from "@/shared/decorators"
+import { GetMeResponse } from "./dto"
 import { UsersClientGrpc } from "./users.grpc"
+import { CurrentUser, Protected } from "@/shared/decorators"
 
 @Controller("users")
 export class UsersController {
-	public constructor(
-		private readonly client: UsersClientGrpc
-	) {}
+	public constructor(private readonly client: UsersClientGrpc) {}
 
 	@ApiOperation({
 		summary: "Get current user profile",
 		description: "Returns authenticated user profile data."
 	})
+	@ApiOkResponse({ type: GetMeResponse })
 	@ApiBearerAuth()
 	@Protected()
 	@Get("me")
