@@ -7,6 +7,7 @@ import { AppService } from "./app.service"
 import { getPassportConfig } from "./config"
 import { AccountModule } from "@/modules/account/account.module"
 import { AuthModule } from "@/modules/auth/auth.module"
+import { UsersModule } from "@/modules/users/users.module"
 
 @Module({
 	imports: [
@@ -18,7 +19,8 @@ import { AuthModule } from "@/modules/auth/auth.module"
 			inject: [ConfigService]
 		}),
 		AuthModule,
-		AccountModule
+		AccountModule,
+		UsersModule
 	],
 	controllers: [AppController],
 	providers: [AppService]
