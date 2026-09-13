@@ -1,7 +1,15 @@
-import { Controller, Get, HttpCode, HttpStatus } from "@nestjs/common"
+import {
+	Body,
+	Controller,
+	Get,
+	HttpCode,
+	HttpStatus,
+	Patch
+} from "@nestjs/common"
 import { ApiBearerAuth, ApiOkResponse, ApiOperation } from "@nestjs/swagger"
+import { lastValueFrom } from "rxjs"
 
-import { GetMeResponse } from "./dto"
+import { GetMeResponse, PatchUserRequest } from "./dto"
 import { UsersClientGrpc } from "./users.grpc"
 import { CurrentUser, Protected } from "@/shared/decorators"
 
@@ -19,6 +27,24 @@ export class UsersController {
 	@Get("me")
 	@HttpCode(HttpStatus.OK)
 	public async getMe(@CurrentUser("id") userId: string) {
-		return this.client.getMe({ id: userId })
+		const { user } = await lastValueFrom(this.client.getMe({ id: userId }))
+
+		return user
+	}
+
+	@ApiOperation({
+		summary: "Update current user profile",
+		description:
+			"Partial update of public account data. Allows targeted changes to the name (`name`)."
+	})
+	@ApiBearerAuth()
+	@Protected()
+	@Patch("")
+	@HttpCode(HttpStatus.OK)
+	public async update(
+		@CurrentUser("id") userId: string,
+		@Body() dto: PatchUserRequest
+	) {
+		return this.client.update({ userId, ...dto })
 	}
 }
