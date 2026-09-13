@@ -2,6 +2,7 @@ import { Inject, Injectable, OnModuleInit } from "@nestjs/common"
 import type { ClientGrpc } from "@nestjs/microservices"
 import type {
 	GetMeRequest,
+	PatchUserRequest,
 	UsersServiceClient
 } from "@qb1tycinema/contracts/gen/users"
 
@@ -20,5 +21,9 @@ export class UsersClientGrpc implements OnModuleInit {
 
 	public getMe(request: GetMeRequest) {
 		return this.usersService.getMe(request)
+	}
+
+	public update(request: PatchUserRequest) {
+		return this.usersService.patchUser(request)
 	}
 }
