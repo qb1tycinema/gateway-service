@@ -12,7 +12,6 @@ import {
 import { ConfigService } from "@nestjs/config"
 import { ApiOperation } from "@nestjs/swagger"
 import type { Request, Response } from "express"
-import { lastValueFrom } from "rxjs"
 
 import { AuthClientGrpc } from "./auth.grpc"
 import {
@@ -37,7 +36,7 @@ export class AuthController {
 	@Post("otp/send")
 	@HttpCode(HttpStatus.OK)
 	public async sendOtp(@Body() dto: SendOtpReguest) {
-		return this.client.sendOtp(dto)
+		return this.client.call("sendOtp", dto)
 	}
 
 	@ApiOperation({
@@ -51,8 +50,9 @@ export class AuthController {
 		@Body() dto: VerifyOtpRequest,
 		@Res({ passthrough: true }) res: Response
 	) {
-		const { accessToken, refreshToken } = await lastValueFrom(
-			this.client.verifyOtp(dto)
+		const { accessToken, refreshToken } = await this.client.call(
+			"verifyOtp",
+			dto
 		)
 
 		res.cookie("refreshToken", refreshToken, {
@@ -79,7 +79,7 @@ export class AuthController {
 		const refreshToken = req.cookies?.refreshToken
 
 		const { accessToken, refreshToken: newRefreshToken } =
-			await lastValueFrom(this.client.refresh({ refreshToken }))
+			await this.client.call("refresh", { refreshToken })
 
 		res.cookie("refreshToken", newRefreshToken, {
 			httpOnly: true,
@@ -120,7 +120,7 @@ export class AuthController {
 	@Get("auth/telegram")
 	@HttpCode(HttpStatus.OK)
 	public async telegramInit() {
-		return this.client.telegramInit()
+		return this.client.call("telegramInit", {})
 	}
 
 	@ApiOperation({
@@ -136,9 +136,7 @@ export class AuthController {
 	) {
 		const query = JSON.parse(atob(dto.tgAuthResult))
 
-		const result = await lastValueFrom(
-			this.client.telegramVerify({ query })
-		)
+		const result = await this.client.call("telegramVerify", { query })
 
 		if ("url" in result && result.url) {
 			return result
@@ -179,8 +177,9 @@ export class AuthController {
 		@Body() dto: TelegramConsumeRequest,
 		@Res({ passthrough: true }) res: Response
 	) {
-		const { accessToken, refreshToken } = await lastValueFrom(
-			this.client.consume(dto)
+		const { accessToken, refreshToken } = await this.client.call(
+			"telegramConsume",
+			dto
 		)
 
 		res.cookie("refreshToken", refreshToken, {
