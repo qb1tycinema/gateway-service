@@ -35,7 +35,7 @@ export class AccountController {
 	@Get()
 	@HttpCode(HttpStatus.OK)
 	public async getAccount(@CurrentUser("id") id: string) {
-		return this.client.getAccount({ id })
+		return this.client.call("getAccount", { id })
 	}
 
 	@ApiOperation({
@@ -50,7 +50,7 @@ export class AccountController {
 		@Body() dto: InitEmailChangeRequest,
 		@CurrentUser("id") id: string
 	) {
-		return this.client.initEmailChange({ ...dto, userId: id })
+		return this.client.call("initEmailChange", { ...dto, userId: id })
 	}
 
 	@ApiOperation({
@@ -65,7 +65,7 @@ export class AccountController {
 		@Body() dto: ConfirmEmailChangeRequest,
 		@CurrentUser("id") id: string
 	) {
-		return this.client.confirmEmailChange({ ...dto, userId: id })
+		return this.client.call("confirmEmailChange", { ...dto, userId: id })
 	}
 
 	@ApiOperation({
@@ -80,7 +80,7 @@ export class AccountController {
 		@Body() dto: InitPhoneChangeRequest,
 		@CurrentUser("id") id: string
 	) {
-		return this.client.initPhoneChange({ ...dto, userId: id })
+		return this.client.call("initPhoneChange", { ...dto, userId: id })
 	}
 
 	@ApiOperation({
@@ -95,6 +95,6 @@ export class AccountController {
 		@Body() dto: ConfirmPhoneChangeRequest,
 		@CurrentUser("id") id: string
 	) {
-		return this.client.confirmPhoneChange({ ...dto, userId: id })
+		return this.client.call("confirmPhoneChange", { ...dto, userId: id })
 	}
 }
