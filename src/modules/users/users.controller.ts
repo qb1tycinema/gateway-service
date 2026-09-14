@@ -7,7 +7,6 @@ import {
 	Patch
 } from "@nestjs/common"
 import { ApiBearerAuth, ApiOkResponse, ApiOperation } from "@nestjs/swagger"
-import { lastValueFrom } from "rxjs"
 
 import { GetMeResponse, PatchUserRequest } from "./dto"
 import { UsersClientGrpc } from "./users.grpc"
@@ -27,7 +26,7 @@ export class UsersController {
 	@Get("me")
 	@HttpCode(HttpStatus.OK)
 	public async getMe(@CurrentUser("id") userId: string) {
-		const { user } = await lastValueFrom(this.client.getMe({ id: userId }))
+		const { user } = await this.client.call("getMe", { id: userId })
 
 		return user
 	}
@@ -39,12 +38,12 @@ export class UsersController {
 	})
 	@ApiBearerAuth()
 	@Protected()
-	@Patch("")
+	@Patch("me")
 	@HttpCode(HttpStatus.OK)
 	public async update(
 		@CurrentUser("id") userId: string,
 		@Body() dto: PatchUserRequest
 	) {
-		return this.client.update({ userId, ...dto })
+		return this.client.call("patchUser", { ...dto, userId })
 	}
 }
