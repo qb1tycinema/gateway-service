@@ -1,7 +1,5 @@
 import { Module } from "@nestjs/common"
-import { ConfigService } from "@nestjs/config"
-import { ClientsModule, Transport } from "@nestjs/microservices"
-import { PROTO_PATHS } from "@qb1tycinema/contracts"
+import { GrpcModule } from "@qb1tycinema/common"
 
 import { AccountModule } from "../account/account.module"
 
@@ -9,23 +7,7 @@ import { UsersController } from "./users.controller"
 import { UsersClientGrpc } from "./users.grpc"
 
 @Module({
-	imports: [
-		AccountModule,
-		ClientsModule.registerAsync([
-			{
-				name: "USERS_PACKAGE",
-				useFactory: (config: ConfigService) => ({
-					transport: Transport.GRPC,
-					options: {
-						package: "users.v1",
-						protoPath: PROTO_PATHS.USERS,
-						url: config.getOrThrow<string>("USERS_GRPC_URL")
-					}
-				}),
-				inject: [ConfigService]
-			}
-		])
-	],
+	imports: [AccountModule, GrpcModule.register(["USERS_PACKAGE"])],
 	controllers: [UsersController],
 	providers: [UsersClientGrpc],
 	exports: [UsersClientGrpc]
