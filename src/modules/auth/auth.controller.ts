@@ -117,7 +117,7 @@ export class AuthController {
 		description:
 			"Initiates the authentication process via Telegram and prepares the session state."
 	})
-	@Get("auth/telegram")
+	@Get("telegram")
 	@HttpCode(HttpStatus.OK)
 	public async telegramInit() {
 		return this.client.call("telegramInit", {})
