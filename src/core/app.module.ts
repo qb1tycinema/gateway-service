@@ -12,7 +12,12 @@ import { UsersModule } from "@/modules/users/users.module"
 @Module({
 	imports: [
 		ConfigModule.forRoot({
-			isGlobal: true
+			isGlobal: true,
+			envFilePath: [
+				`.env.${process.env.NODE_ENV}.local`,
+				`.env.${process.env.NODE_ENV}`,
+				".env"
+			],
 		}),
 		PassportModule.registerAsync({
 			useFactory: getPassportConfig,
