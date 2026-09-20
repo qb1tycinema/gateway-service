@@ -1,10 +1,13 @@
 import { Global, Module } from "@nestjs/common"
+import { APP_INTERCEPTOR } from "@nestjs/core"
 import {
 	makeCounterProvider,
 	makeGaugeProvider,
 	makeHistogramProvider,
 	PrometheusModule
 } from "@willsoto/nestjs-prometheus"
+
+import { HttpMetricsInterceptor } from "./http-metrics.interceptor"
 
 @Global()
 @Module({
@@ -31,7 +34,11 @@ import {
 			name: "http_requests_total",
 			help: "Total HTTP requests",
 			labelNames: ["service", "method", "route", "status"]
-		})
+		}),
+		{
+			provide: APP_INTERCEPTOR,
+			useClass: HttpMetricsInterceptor
+		}
 	]
 })
 export class MetricsModule {}
