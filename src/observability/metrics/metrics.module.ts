@@ -22,11 +22,11 @@ import {
 			help: "HTTP request latency",
 			labelNames: ["service", "method", "route", "status"]
 		}),
-        makeGaugeProvider({
-            name: "http_requests_in_flight",
-            help: "Current number of in-flight HTTP requests",
-            labelNames: ["service"]
-        }),
+		makeGaugeProvider({
+			name: "http_requests_in_flight",
+			help: "Current number of in-flight HTTP requests",
+			labelNames: ["service"]
+		}),
 		makeCounterProvider({
 			name: "http_requests_total",
 			help: "Total HTTP requests",
