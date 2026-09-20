@@ -23,7 +23,8 @@ import { HttpMetricsInterceptor } from "./http-metrics.interceptor"
 		makeHistogramProvider({
 			name: "http_request_duration_seconds",
 			help: "HTTP request latency",
-			labelNames: ["service", "method", "route", "status"]
+			labelNames: ["service", "method", "route", "status"],
+			buckets: [0.05, 0.1, 0.2, 0.3, 0.5, 1, 1.5, 2, 3, 5]
 		}),
 		makeGaugeProvider({
 			name: "http_requests_in_flight",
