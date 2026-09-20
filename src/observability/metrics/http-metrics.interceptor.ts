@@ -7,7 +7,7 @@ import {
 import { InjectMetric } from "@willsoto/nestjs-prometheus"
 import type { Request, Response } from "express"
 import { Counter, Gauge, Histogram } from "prom-client"
-import type { Observable } from "rxjs"
+import { finalize, type Observable } from "rxjs"
 
 @Injectable()
 export class HttpMetricsInterceptor implements NestInterceptor {
@@ -34,6 +34,30 @@ export class HttpMetricsInterceptor implements NestInterceptor {
 		const method = req.method
 		const route = req.route.path || "unknown"
 
-		return "" as any
+		this.inFlight.inc({ service: this.serviceName })
+
+		const endTimer = this.historgram.startTimer()
+
+		return next.handle().pipe(
+			finalize(() => {
+				const status = res.statusCode.toString()
+
+				this.counter.inc({
+					service: this.serviceName,
+					method,
+					route,
+					status
+				})
+
+				endTimer({
+					service: this.serviceName,
+					method,
+					route,
+					status
+				})
+
+				this.inFlight.dec({ service: this.serviceName })
+			})
+		)
 	}
 }
