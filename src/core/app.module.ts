@@ -8,6 +8,7 @@ import { getPassportConfig } from "./config"
 import { AccountModule } from "@/modules/account/account.module"
 import { AuthModule } from "@/modules/auth/auth.module"
 import { UsersModule } from "@/modules/users/users.module"
+import { ObservabilityModule } from "@/observability/observability.module"
 
 @Module({
 	imports: [
@@ -17,12 +18,13 @@ import { UsersModule } from "@/modules/users/users.module"
 				`.env.${process.env.NODE_ENV}.local`,
 				`.env.${process.env.NODE_ENV}`,
 				".env"
-			],
+			]
 		}),
 		PassportModule.registerAsync({
 			useFactory: getPassportConfig,
 			inject: [ConfigService]
 		}),
+		ObservabilityModule,
 		AuthModule,
 		AccountModule,
 		UsersModule
