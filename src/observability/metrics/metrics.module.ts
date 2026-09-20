@@ -1,5 +1,5 @@
 import { Global, Module } from "@nestjs/common";
-import { makeHistogramProvider, PrometheusModule } from "@willsoto/nestjs-prometheus"
+import { makeCounterProvider, makeHistogramProvider, PrometheusModule } from "@willsoto/nestjs-prometheus"
 
 @Global()
 @Module({
@@ -17,6 +17,11 @@ import { makeHistogramProvider, PrometheusModule } from "@willsoto/nestjs-promet
             help: "HTTP request latency",
             labelNames: ["service", "method", "route", "status"]
         }),
+        makeCounterProvider({
+            name: "http_requests_total",
+            help: "Total HTTP requests",
+            labelNames: ["service", "method", "route", "status"]
+        })
    ]
 })
 export class MetricsModule {}
