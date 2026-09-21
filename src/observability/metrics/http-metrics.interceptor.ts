@@ -36,7 +36,10 @@ export class HttpMetricsInterceptor implements NestInterceptor {
 
 		this.inFlight.inc({ service: this.serviceName })
 
-		const endTimer = this.historgram.startTimer()
+		const endTimer = this.historgram.startTimer({
+			service: this.serviceName,
+			method
+		})
 
 		return next.handle().pipe(
 			finalize(() => {

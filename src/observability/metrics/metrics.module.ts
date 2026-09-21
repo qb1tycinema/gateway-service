@@ -36,6 +36,7 @@ import { HttpMetricsInterceptor } from "./http-metrics.interceptor"
 			help: "Total HTTP requests",
 			labelNames: ["service", "method", "route", "status"]
 		}),
+		HttpMetricsInterceptor,
 		{
 			provide: APP_INTERCEPTOR,
 			useClass: HttpMetricsInterceptor
