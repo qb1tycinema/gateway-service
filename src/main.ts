@@ -10,6 +10,7 @@ import {
 	swaggerConfig
 } from "./core/config"
 import { GrpcExceptionFilter } from "./shared/filters"
+import "@/observability/tracing"
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule)
