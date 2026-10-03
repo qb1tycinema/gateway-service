@@ -1,3 +1,5 @@
+import "@/observability/tracing"
+
 import { Logger, ValidationPipe } from "@nestjs/common"
 import { ConfigService } from "@nestjs/config"
 import { NestFactory } from "@nestjs/core"
@@ -10,7 +12,6 @@ import {
 	swaggerConfig
 } from "./core/config"
 import { GrpcExceptionFilter } from "./shared/filters"
-import "@/observability/tracing"
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule)
