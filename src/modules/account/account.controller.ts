@@ -8,6 +8,7 @@ import {
 } from "@nestjs/common"
 import { ConfigService } from "@nestjs/config"
 import { ApiBearerAuth, ApiOperation } from "@nestjs/swagger"
+import { PinoLogger } from "nestjs-pino"
 
 import { AccountClientGrpc } from "./account.grpc"
 import {
@@ -21,9 +22,12 @@ import { CurrentUser, Protected } from "@/shared/decorators"
 @Controller("account")
 export class AccountController {
 	public constructor(
+		private readonly logger: PinoLogger,
 		private readonly client: AccountClientGrpc,
 		private readonly config: ConfigService
-	) {}
+	) {
+		this.logger.setContext(AccountController.name)
+	}
 
 	@ApiOperation({
 		summary: "Get current user profile",
@@ -35,7 +39,16 @@ export class AccountController {
 	@Get()
 	@HttpCode(HttpStatus.OK)
 	public async getAccount(@CurrentUser("id") id: string) {
-		return this.client.call("getAccount", { id })
+		this.logger.info({ userId: id }, "Gateway: Fetching account profile")
+
+		const response = await this.client.call("getAccount", { id })
+
+		this.logger.debug(
+			{ userId: id },
+			"Gateway: Account profile received from microservice"
+		)
+
+		return response
 	}
 
 	@ApiOperation({
@@ -50,7 +63,22 @@ export class AccountController {
 		@Body() dto: InitEmailChangeRequest,
 		@CurrentUser("id") id: string
 	) {
-		return this.client.call("initEmailChange", { ...dto, userId: id })
+		this.logger.info(
+			{ userId: id, email: dto.email },
+			"Gateway: Dispatching email change initialization"
+		)
+
+		const response = await this.client.call("initEmailChange", {
+			...dto,
+			userId: id
+		})
+
+		this.logger.debug(
+			{ userId: id },
+			"Gateway: Email change initialized successfully"
+		)
+
+		return response
 	}
 
 	@ApiOperation({
@@ -65,7 +93,22 @@ export class AccountController {
 		@Body() dto: ConfirmEmailChangeRequest,
 		@CurrentUser("id") id: string
 	) {
-		return this.client.call("confirmEmailChange", { ...dto, userId: id })
+		this.logger.info(
+			{ userId: id, email: dto.email },
+			"Gateway: Dispatching email change confirmation"
+		)
+
+		const response = await this.client.call("confirmEmailChange", {
+			...dto,
+			userId: id
+		})
+
+		this.logger.debug(
+			{ userId: id },
+			"Gateway: Email change confirmed successfully"
+		)
+
+		return response
 	}
 
 	@ApiOperation({
@@ -80,7 +123,22 @@ export class AccountController {
 		@Body() dto: InitPhoneChangeRequest,
 		@CurrentUser("id") id: string
 	) {
-		return this.client.call("initPhoneChange", { ...dto, userId: id })
+		this.logger.info(
+			{ userId: id, phone: dto.phone },
+			"Gateway: Dispatching phone change initialization"
+		)
+
+		const response = await this.client.call("initPhoneChange", {
+			...dto,
+			userId: id
+		})
+
+		this.logger.debug(
+			{ userId: id },
+			"Gateway: Phone change initialized successfully"
+		)
+
+		return response
 	}
 
 	@ApiOperation({
@@ -95,6 +153,21 @@ export class AccountController {
 		@Body() dto: ConfirmPhoneChangeRequest,
 		@CurrentUser("id") id: string
 	) {
-		return this.client.call("confirmPhoneChange", { ...dto, userId: id })
+		this.logger.info(
+			{ userId: id, phone: dto.phone },
+			"Gateway: Dispatching phone change confirmation"
+		)
+
+		const response = await this.client.call("confirmPhoneChange", {
+			...dto,
+			userId: id
+		})
+
+		this.logger.debug(
+			{ userId: id },
+			"Gateway: Phone change confirmed successfully"
+		)
+
+		return response
 	}
 }
