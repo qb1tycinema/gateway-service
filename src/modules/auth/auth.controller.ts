@@ -12,6 +12,7 @@ import {
 import { ConfigService } from "@nestjs/config"
 import { ApiOperation } from "@nestjs/swagger"
 import type { Request, Response } from "express"
+import { PinoLogger } from "nestjs-pino"
 
 import { AuthClientGrpc } from "./auth.grpc"
 import {
@@ -24,9 +25,12 @@ import {
 @Controller("auth")
 export class AuthController {
 	public constructor(
+		private readonly logger: PinoLogger,
 		private readonly client: AuthClientGrpc,
 		private readonly config: ConfigService
-	) {}
+	) {
+		this.logger.setContext(AuthController.name)
+	}
 
 	@ApiOperation({
 		summary: "Send otp code",
@@ -36,7 +40,19 @@ export class AuthController {
 	@Post("otp/send")
 	@HttpCode(HttpStatus.OK)
 	public async sendOtp(@Body() dto: SendOtpReguest) {
-		return this.client.call("sendOtp", dto)
+		this.logger.info(
+			{ identifier: dto.identifier, type: dto.type },
+			"Gateway: Dispatching OTP send request"
+		)
+
+		const response = await this.client.call("sendOtp", dto)
+
+		this.logger.debug(
+			{ identifier: dto.identifier },
+			"Gateway: OTP send request processed successfully"
+		)
+
+		return response
 	}
 
 	@ApiOperation({
@@ -50,9 +66,19 @@ export class AuthController {
 		@Body() dto: VerifyOtpRequest,
 		@Res({ passthrough: true }) res: Response
 	) {
+		this.logger.info(
+			{ identifier: dto.identifier, type: dto.type },
+			"Gateway: Dispatching OTP verification request"
+		)
+
 		const { accessToken, refreshToken } = await this.client.call(
 			"verifyOtp",
 			dto
+		)
+
+		this.logger.info(
+			{ identifier: dto.identifier },
+			"Gateway: OTP verified successfully, setting secure cookies"
 		)
 
 		res.cookie("refreshToken", refreshToken, {
@@ -76,10 +102,22 @@ export class AuthController {
 		@Req() req: Request,
 		@Res({ passthrough: true }) res: Response
 	) {
+		this.logger.debug("Gateway: Dispatching token refresh request")
+
 		const refreshToken = req.cookies?.refreshToken
+
+		if (!refreshToken) {
+			this.logger.warn(
+				"Gateway: Refresh attempt without refresh token in cookies"
+			)
+		}
 
 		const { accessToken, refreshToken: newRefreshToken } =
 			await this.client.call("refresh", { refreshToken })
+
+		this.logger.info(
+			"Gateway: Tokens refreshed successfully, updating cookies"
+		)
 
 		res.cookie("refreshToken", newRefreshToken, {
 			httpOnly: true,
@@ -99,6 +137,8 @@ export class AuthController {
 	@Post("logout")
 	@HttpCode(HttpStatus.OK)
 	public async logout(@Res() res: Response) {
+		this.logger.info("Gateway: Processing user logout, clearing cookies")
+
 		res.cookie("refreshToken", "", {
 			httpOnly: true,
 			secure: this.config.get("NODE_ENV") !== "development",
@@ -120,7 +160,13 @@ export class AuthController {
 	@Get("telegram")
 	@HttpCode(HttpStatus.OK)
 	public async telegramInit() {
-		return this.client.call("telegramInit", {})
+		this.logger.info("Gateway: Initiating Telegram OAuth flow")
+
+		const response = await this.client.call("telegramInit", {})
+
+		this.logger.debug("Gateway: Telegram OAuth URL generated")
+
+		return response
 	}
 
 	@ApiOperation({
@@ -134,11 +180,24 @@ export class AuthController {
 		@Body() dto: TelegramVerifyRequest,
 		@Res({ passthrough: true }) res: Response
 	) {
+		this.logger.info("Gateway: Verifying Telegram authentication payload")
+
 		const query = JSON.parse(atob(dto.tgAuthResult))
+
+		const telegramId = query.id
+
+		this.logger.debug(
+			{ telegramId },
+			"Gateway: Dispatching Telegram verify request"
+		)
 
 		const result = await this.client.call("telegramVerify", { query })
 
 		if ("url" in result && result.url) {
+			this.logger.info(
+				{ telegramId },
+				"Gateway: Telegram account incomplete, returning redirect URL for bot session"
+			)
 			return result
 		}
 
@@ -148,6 +207,11 @@ export class AuthController {
 			result.accessToken &&
 			result.refreshToken
 		) {
+			this.logger.info(
+				{ telegramId },
+				"Gateway: Telegram login successful, setting secure cookies"
+			)
+
 			const { accessToken, refreshToken } = result
 
 			res.cookie("refreshToken", refreshToken, {
@@ -163,6 +227,10 @@ export class AuthController {
 			}
 		}
 
+		this.logger.warn(
+			{ telegramId },
+			"Gateway: Invalid Telegram login response from microservice"
+		)
 		throw new UnauthorizedException("Invalid Telegram login response")
 	}
 
@@ -177,9 +245,19 @@ export class AuthController {
 		@Body() dto: TelegramConsumeRequest,
 		@Res({ passthrough: true }) res: Response
 	) {
+		this.logger.info(
+			{ sessionId: dto.sessionId },
+			"Gateway: Finalizing Telegram authentication session"
+		)
+
 		const { accessToken, refreshToken } = await this.client.call(
 			"telegramConsume",
 			dto
+		)
+
+		this.logger.info(
+			{ sessionId: dto.sessionId },
+			"Gateway: Telegram session consumed successfully, setting cookies"
 		)
 
 		res.cookie("refreshToken", refreshToken, {
