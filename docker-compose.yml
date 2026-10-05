@@ -17,6 +17,8 @@ services:
       interval: 30s
       timeout: 3s
       retries: 5
+    volumes:
+      - ../docker/logs/gateway:/var/log/services/gateway
     networks:
       - qb1tycinema
 
