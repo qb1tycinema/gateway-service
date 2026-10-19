@@ -5,9 +5,16 @@ import type {
 	MediaServiceClient,
 	UploadRequest
 } from "@qb1tycinema/contracts/gen/media"
+import { randomBytes } from "crypto"
 import type { Multer } from "multer"
 import { PinoLogger } from "nestjs-pino"
-import { catchError, lastValueFrom, Subject, throwError, timeout } from "rxjs"
+import {
+	catchError,
+	lastValueFrom,
+	ReplaySubject,
+	throwError,
+	timeout
+} from "rxjs"
 
 @Injectable()
 export class MediaClientGrpc extends AbstractGrpcClient<MediaServiceClient> {
@@ -21,7 +28,7 @@ export class MediaClientGrpc extends AbstractGrpcClient<MediaServiceClient> {
 	}
 
 	public async upload(file: Express.Multer.File, folder: string) {
-		const subject = new Subject<UploadRequest>()
+		const subject = new ReplaySubject<UploadRequest>()
 		const response$ = this.service.upload(subject.asObservable()).pipe(
 			timeout(5000),
 			catchError(err => {
@@ -32,7 +39,7 @@ export class MediaClientGrpc extends AbstractGrpcClient<MediaServiceClient> {
 
 		subject.next({
 			metadata: {
-				fileName: file.originalname,
+				fileName: randomBytes(16).toString("hex"),
 				folder,
 				contentType: file.mimetype
 			}
@@ -43,7 +50,10 @@ export class MediaClientGrpc extends AbstractGrpcClient<MediaServiceClient> {
 		return await lastValueFrom(response$)
 	}
 
-	private streamChunks(buffer: Buffer, subject: Subject<UploadRequest>) {
+	private streamChunks(
+		buffer: Buffer,
+		subject: ReplaySubject<UploadRequest>
+	) {
 		let offset = 0
 
 		try {
