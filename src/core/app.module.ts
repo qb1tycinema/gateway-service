@@ -8,7 +8,6 @@ import { AppService } from "./app.service"
 import { getPassportConfig, getPinoConfig } from "./config"
 import { AccountModule } from "@/modules/account/account.module"
 import { AuthModule } from "@/modules/auth/auth.module"
-import { MediaModule } from "@/modules/media/media.module"
 import { UsersModule } from "@/modules/users/users.module"
 import { ObservabilityModule } from "@/observability/observability.module"
 
@@ -33,8 +32,7 @@ import { ObservabilityModule } from "@/observability/observability.module"
 		ObservabilityModule,
 		AuthModule,
 		AccountModule,
-		UsersModule,
-		MediaModule
+		UsersModule
 	],
 	controllers: [AppController],
 	providers: [AppService]
