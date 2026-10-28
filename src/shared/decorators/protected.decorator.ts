@@ -7,7 +7,7 @@ import { Roles } from "./roles.decorator"
 
 export const Protected = (...roles: Role[]) => {
 	if (roles.length === 0) {
-		applyDecorators(UseGuards(AuthGuard))
+		return applyDecorators(UseGuards(AuthGuard))
 	}
 
 	return applyDecorators(Roles(...roles), UseGuards(AuthGuard, RolesGuard))
