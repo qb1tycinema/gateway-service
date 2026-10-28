@@ -6,7 +6,6 @@ import {
 	HttpStatus,
 	Post
 } from "@nestjs/common"
-import { ConfigService } from "@nestjs/config"
 import { ApiBearerAuth, ApiOperation } from "@nestjs/swagger"
 import { PinoLogger } from "nestjs-pino"
 
@@ -23,8 +22,7 @@ import { CurrentUser, Protected } from "@/shared/decorators"
 export class AccountController {
 	public constructor(
 		private readonly logger: PinoLogger,
-		private readonly client: AccountClientGrpc,
-		private readonly config: ConfigService
+		private readonly client: AccountClientGrpc
 	) {
 		this.logger.setContext(AccountController.name)
 	}
