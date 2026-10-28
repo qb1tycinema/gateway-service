@@ -22,7 +22,7 @@ export class GetMeResponse {
 	public phone!: string
 
 	@ApiPropertyOptional({
-		example: "https://qb1tycinema.kz/users/e04db416fc2aab147599c750906396d3"
+		example: "users/e04db416fc2aab147599c750906396d3.webp"
 	})
 	public avatar!: string
 }
